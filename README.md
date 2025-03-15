@@ -45,3 +45,21 @@ Type linting:
 ```
 mypy --strict analysis
 ```
+
+## Running
+
+Available entry points:
+
+- `tax_rates_over_time`
+
+Run the specific package
+
+```
+python3 -m analysis.<package>
+```
+
+Eg. to run `tax_rates_over_time`:
+
+```
+python3 -m analysis.tax_rates_over_time
+```
