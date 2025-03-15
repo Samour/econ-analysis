@@ -1,0 +1,4 @@
+- Tax brackets over time
+- Tax brackets over time, adjusted for CPI
+- Tax brackets over time, adjusted for WPI
+- Effective tax rate paid on quartile incomes, over time
