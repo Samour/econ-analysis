@@ -8,7 +8,7 @@ import re
 @dataclass(frozen=True)
 class TaxBracket:
     start: decimal.Decimal
-    end: decimal.Decimal
+    end: typing.Optional[decimal.Decimal]
     # TODO Change these to correct decimal type
     rate: decimal.Decimal
 
@@ -40,13 +40,27 @@ def _load_tax_tables_from_content(
 
 def _load_tax_table(content: dict[typing.Any, typing.Any]) -> TaxTable:
     assert type(content) == dict
-    year = content["year"]
-    assert type(year) == str
-    brackets = content["brackets"]
-    assert type(brackets) == list
+    fy = content["year"]
+    assert type(fy) == str
+    brackets_data = content["brackets"]
+    assert type(brackets_data) == list
+
+    year = _parse_financial_year(fy)
+    brackets: list[TaxBracket] = []
+    for b in brackets_data:
+        bracket = _load_tax_bracket(b)
+        if len(brackets) > 0:
+            assert brackets[-1].end is not None
+            assert bracket.start == brackets[-1].end + 1
+        else:
+            assert bracket.start == 0
+        brackets.append(bracket)
+    assert len(brackets) > 0
+    assert brackets[-1].end is None
+
     return TaxTable(
-        year=_parse_financial_year(year),
-        brackets=[_load_tax_bracket(b) for b in brackets],
+        year=year,
+        brackets=brackets,
     )
 
 
@@ -67,16 +81,16 @@ def _load_tax_bracket(content: dict[typing.Any, typing.Any]) -> TaxBracket:
     b_min = content["min"]
     assert type(b_min) == str
     b_max = content["max"]
-    assert type(b_max) == str
+    assert b_max is None or type(b_max) == str
     b_rate = content["rate"]
     assert type(b_rate) == str
 
     bracket = TaxBracket(
         start=decimal.Decimal(b_min),
-        end=decimal.Decimal(b_max),
+        end=decimal.Decimal(b_max) if b_max is not None else None,
         rate=decimal.Decimal(b_rate),
     )
-    assert bracket.start < bracket.end
+    assert bracket.end is None or bracket.start < bracket.end
     assert bracket.rate >= 0
     assert bracket.rate <= 1
 

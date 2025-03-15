@@ -190,3 +190,267 @@ class LoadTaxBracketTests(unittest.TestCase):
         """
         with self.assertRaises(decimal.InvalidOperation):
             tax._load_tax_bracket(json.loads(bracket))
+
+
+class LoadTaxTableTests(unittest.TestCase):
+
+    def test_load_tax_table(self) -> None:
+        table = """
+        {
+          "year": "2024-25",
+          "brackets": [
+            {
+              "min": "0",
+              "max": "18200",
+              "rate": "0"
+            },
+            {
+              "min": "18201",
+              "max": "45000",
+              "rate": "0.16"
+            },
+            {
+              "min": "45001",
+              "max": "135000",
+              "rate": "0.30"
+            },
+            {
+              "min": "135001",
+              "max": "190000",
+              "rate": "0.37"
+            },
+            {
+              "min": "190001",
+              "max": null,
+              "rate": "0.45"
+            }
+          ]
+        }
+        """
+        result = tax._load_tax_table(json.loads(table))
+
+        self.assertEqual(result.year, 2024)
+        self.assertEqual(len(result.brackets), 5)
+
+    def test_tax_table_non_contiguous(self) -> None:
+        table = """
+        {
+          "year": "2024-25",
+          "brackets": [
+            {
+              "min": "0",
+              "max": "18200",
+              "rate": "0"
+            },
+            {
+              "min": "45001",
+              "max": "135000",
+              "rate": "0.30"
+            },
+            {
+              "min": "135001",
+              "max": "190000",
+              "rate": "0.37"
+            },
+            {
+              "min": "190001",
+              "max": null,
+              "rate": "0.45"
+            }
+          ]
+        }
+        """
+
+        with self.assertRaises(AssertionError):
+            tax._load_tax_table(json.loads(table))
+
+    def test_tax_table_overlapping(self) -> None:
+        table = """
+        {
+          "year": "2024-25",
+          "brackets": [
+            {
+              "min": "0",
+              "max": "18200",
+              "rate": "0"
+            },
+            {
+              "min": "15201",
+              "max": "45000",
+              "rate": "0.16"
+            },
+            {
+              "min": "45001",
+              "max": "135000",
+              "rate": "0.30"
+            },
+            {
+              "min": "135001",
+              "max": "190000",
+              "rate": "0.37"
+            },
+            {
+              "min": "190001",
+              "max": null,
+              "rate": "0.45"
+            }
+          ]
+        }
+        """
+
+        with self.assertRaises(AssertionError):
+            tax._load_tax_table(json.loads(table))
+
+    def test_tax_table_out_of_order(self) -> None:
+        table = """
+        {
+          "year": "2024-25",
+          "brackets": [
+            {
+              "min": "0",
+              "max": "18200",
+              "rate": "0"
+            },
+            {
+              "min": "45001",
+              "max": "135000",
+              "rate": "0.30"
+            },
+            {
+              "min": "18201",
+              "max": "45000",
+              "rate": "0.16"
+            },
+            {
+              "min": "135001",
+              "max": "190000",
+              "rate": "0.37"
+            },
+            {
+              "min": "190001",
+              "max": null,
+              "rate": "0.45"
+            }
+          ]
+        }
+        """
+
+        with self.assertRaises(AssertionError):
+            tax._load_tax_table(json.loads(table))
+
+    def test_tax_table_starts_above_zero(self) -> None:
+        table = """
+        {
+          "year": "2024-25",
+          "brackets": [
+            {
+              "min": "6000",
+              "max": "18200",
+              "rate": "0"
+            },
+            {
+              "min": "18201",
+              "max": "45000",
+              "rate": "0.16"
+            },
+            {
+              "min": "45001",
+              "max": "135000",
+              "rate": "0.30"
+            },
+            {
+              "min": "135001",
+              "max": "190000",
+              "rate": "0.37"
+            },
+            {
+              "min": "190001",
+              "max": null,
+              "rate": "0.45"
+            }
+          ]
+        }
+        """
+
+        with self.assertRaises(AssertionError):
+            tax._load_tax_table(json.loads(table))
+
+    def test_tax_table_missing_uncapped_bracket(self) -> None:
+        table = """
+        {
+          "year": "2024-25",
+          "brackets": [
+            {
+              "min": "0",
+              "max": "18200",
+              "rate": "0"
+            },
+            {
+              "min": "18201",
+              "max": "45000",
+              "rate": "0.16"
+            },
+            {
+              "min": "45001",
+              "max": "135000",
+              "rate": "0.30"
+            },
+            {
+              "min": "135001",
+              "max": "190000",
+              "rate": "0.37"
+            }
+          ]
+        }
+        """
+
+        with self.assertRaises(AssertionError):
+            tax._load_tax_table(json.loads(table))
+
+    def test_tax_table_multiple_uncapped_brackets(self) -> None:
+        table = """
+        {
+          "year": "2024-25",
+          "brackets": [
+            {
+              "min": "0",
+              "max": "18200",
+              "rate": "0"
+            },
+            {
+              "min": "18201",
+              "max": "45000",
+              "rate": "0.16"
+            },
+            {
+              "min": "45001",
+              "max": "135000",
+              "rate": "0.30"
+            },
+            {
+              "min": "135001",
+              "max": null,
+              "rate": "0.37"
+            },
+            {
+              "min": "190001",
+              "max": null,
+              "rate": "0.45"
+            }
+          ]
+        }
+        """
+
+        with self.assertRaises(AssertionError):
+            tax._load_tax_table(json.loads(table))
+
+    def test_tax_table_empty(self) -> None:
+        table = """
+        {
+          "year": "2024-25",
+          "brackets": []
+        }
+        """
+
+        with self.assertRaises(AssertionError):
+            tax._load_tax_table(json.loads(table))
