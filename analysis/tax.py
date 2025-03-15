@@ -9,7 +9,6 @@ import re
 class TaxBracket:
     start: decimal.Decimal
     end: typing.Optional[decimal.Decimal]
-    # TODO Change these to correct decimal type
     rate: decimal.Decimal
 
 
