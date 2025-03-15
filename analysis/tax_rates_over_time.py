@@ -1,17 +1,17 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import typing
-from analysis import tax, labels
+from analysis import tax, labels, inflation
 
 
-_Adjustment = typing.Literal["none", "cpi", "wpi"]
-
-
-_clamp = lambda x, y, z: max(x, min(y, z))
-
-
-def _show_tax_tables() -> None:
+def _show_tax_tables(
+    inflation_adjusted: typing.Optional[inflation.InflationMeasure] = None,
+) -> None:
     tax_tables = tax.load_tax_tables()
+    if inflation_adjusted is not None:
+        tax_tables = tax_tables.adjusted_for_inflation(
+            inflation.load_inflation(measure=inflation_adjusted)
+        )
 
     rows = []
     for year in tax_tables.year_tables:
@@ -52,4 +52,4 @@ def _show_tax_tables() -> None:
 
 
 if __name__ == "__main__":
-    _show_tax_tables()
+    _show_tax_tables(inflation.InflationMeasure.CPI)

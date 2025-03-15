@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import decimal
 import json
 import typing
-from analysis import parse
+from analysis import parse, inflation
 
 
 @dataclass(frozen=True)
@@ -35,10 +35,38 @@ class TaxTable:
 
         return tax_amount
 
+    def adjusted_for_inflation(
+        self, inflate: inflation.Inflation, to_year: int
+    ) -> "TaxTable":
+        last_end: typing.Optional[decimal.Decimal] = self.brackets[0].start
+        brackets: list[TaxBracket] = []
+        for bracket in self.brackets:
+            new_end = (
+                inflate.adjust(amount=bracket.end, from_year=self.year, to_year=to_year)
+                if bracket.end is not None
+                else None
+            )
+            assert last_end is not None
+            brackets.append(TaxBracket(start=last_end, end=new_end, rate=bracket.rate))
+            last_end = new_end
+
+        return TaxTable(year=self.year, brackets=brackets)
+
 
 @dataclass(frozen=True)
 class MultiYearTaxTable:
     year_tables: list[TaxTable]
+
+    def adjusted_for_inflation(
+        self, inflate: inflation.Inflation
+    ) -> "MultiYearTaxTable":
+        to_year = max(t.year for t in self.year_tables)
+        return MultiYearTaxTable(
+            year_tables=[
+                t.adjusted_for_inflation(inflate, to_year=to_year)
+                for t in self.year_tables
+            ]
+        )
 
 
 def load_tax_tables(fname: str = "data/aus_tax_table.json") -> MultiYearTaxTable:
