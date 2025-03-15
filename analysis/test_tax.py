@@ -51,7 +51,7 @@ class LoadTaxBracketTests(unittest.TestCase):
             "rate": "0.30"
         }
         """
-        result = tax._load_tax_bracket(json.loads(bracket))
+        result = tax._load_tax_bracket(json.loads(bracket), fy="2024-25")
 
         self.assertEqual(
             result,
@@ -70,7 +70,7 @@ class LoadTaxBracketTests(unittest.TestCase):
             "rate": "0"
         }
         """
-        result = tax._load_tax_bracket(json.loads(bracket))
+        result = tax._load_tax_bracket(json.loads(bracket), fy="2024-25")
 
         self.assertEqual(
             result,
@@ -90,7 +90,7 @@ class LoadTaxBracketTests(unittest.TestCase):
         }
         """
         with self.assertRaises(AssertionError):
-            tax._load_tax_bracket(json.loads(bracket))
+            tax._load_tax_bracket(json.loads(bracket), fy="2024-25")
 
     def test_load_tax_bracket_end_below_start(self) -> None:
         bracket = """
@@ -101,7 +101,7 @@ class LoadTaxBracketTests(unittest.TestCase):
         }
         """
         with self.assertRaises(AssertionError):
-            tax._load_tax_bracket(json.loads(bracket))
+            tax._load_tax_bracket(json.loads(bracket), fy="2024-25")
 
     def test_load_tax_bracket_negative_rate(self) -> None:
         bracket = """
@@ -112,7 +112,7 @@ class LoadTaxBracketTests(unittest.TestCase):
         }
         """
         with self.assertRaises(AssertionError):
-            tax._load_tax_bracket(json.loads(bracket))
+            tax._load_tax_bracket(json.loads(bracket), fy="2024-25")
 
     def test_load_tax_bracket_rate_over_one(self) -> None:
         bracket = """
@@ -123,7 +123,7 @@ class LoadTaxBracketTests(unittest.TestCase):
         }
         """
         with self.assertRaises(AssertionError):
-            tax._load_tax_bracket(json.loads(bracket))
+            tax._load_tax_bracket(json.loads(bracket), fy="2024-25")
 
     def test_load_tax_bracket_min_number_type(self) -> None:
         bracket = """
@@ -134,7 +134,7 @@ class LoadTaxBracketTests(unittest.TestCase):
         }
         """
         with self.assertRaises(AssertionError):
-            tax._load_tax_bracket(json.loads(bracket))
+            tax._load_tax_bracket(json.loads(bracket), fy="2024-25")
 
     def test_load_tax_bracket_non_numeric_min(self) -> None:
         bracket = """
@@ -145,7 +145,7 @@ class LoadTaxBracketTests(unittest.TestCase):
         }
         """
         with self.assertRaises(decimal.InvalidOperation):
-            tax._load_tax_bracket(json.loads(bracket))
+            tax._load_tax_bracket(json.loads(bracket), fy="2024-25")
 
     def test_load_tax_bracket_max_number_type(self) -> None:
         bracket = """
@@ -156,7 +156,7 @@ class LoadTaxBracketTests(unittest.TestCase):
         }
         """
         with self.assertRaises(AssertionError):
-            tax._load_tax_bracket(json.loads(bracket))
+            tax._load_tax_bracket(json.loads(bracket), fy="2024-25")
 
     def test_load_tax_bracket_non_numeric_max(self) -> None:
         bracket = """
@@ -167,7 +167,7 @@ class LoadTaxBracketTests(unittest.TestCase):
         }
         """
         with self.assertRaises(decimal.InvalidOperation):
-            tax._load_tax_bracket(json.loads(bracket))
+            tax._load_tax_bracket(json.loads(bracket), fy="2024-25")
 
     def test_load_tax_bracket_rate_number_type(self) -> None:
         bracket = """
@@ -178,7 +178,7 @@ class LoadTaxBracketTests(unittest.TestCase):
         }
         """
         with self.assertRaises(AssertionError):
-            tax._load_tax_bracket(json.loads(bracket))
+            tax._load_tax_bracket(json.loads(bracket), fy="2024-25")
 
     def test_load_tax_bracket_non_numeric_rate(self) -> None:
         bracket = """
@@ -189,7 +189,7 @@ class LoadTaxBracketTests(unittest.TestCase):
         }
         """
         with self.assertRaises(decimal.InvalidOperation):
-            tax._load_tax_bracket(json.loads(bracket))
+            tax._load_tax_bracket(json.loads(bracket), fy="2024-25")
 
 
 class LoadTaxTableTests(unittest.TestCase):
@@ -481,7 +481,7 @@ class TaxBracketTests(unittest.TestCase):
           "rate": "0"
         }
         """
-        tax_bracket = tax._load_tax_bracket(json.loads(bracket))
+        tax_bracket = tax._load_tax_bracket(json.loads(bracket), fy="2024-25")
 
         result = tax_bracket.compute_tax(decimal.Decimal(200))
 
@@ -500,7 +500,7 @@ class TaxBracketTests(unittest.TestCase):
           "rate": "0.40"
         }
         """
-        return tax._load_tax_bracket(json.loads(bracket))
+        return tax._load_tax_bracket(json.loads(bracket), fy="2024-25")
 
 
 class TaxTableTests(unittest.TestCase):
