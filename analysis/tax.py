@@ -11,6 +11,13 @@ class TaxBracket:
     end: typing.Optional[decimal.Decimal]
     rate: decimal.Decimal
 
+    def compute_tax(self, amount: decimal.Decimal) -> decimal.Decimal:
+        if amount < self.start:
+            return decimal.Decimal(0)
+        if self.end is not None and amount > self.end:
+            amount = self.end
+        return (amount - self.start + 1) * self.rate
+
 
 @dataclass(frozen=True)
 class TaxTable:
@@ -18,6 +25,15 @@ class TaxTable:
     # IE for FY 2022-23, year = 2022
     year: int
     brackets: list[TaxBracket]
+
+    def calculate_tax(self, taxable_income: decimal.Decimal) -> decimal.Decimal:
+        tax_amount = decimal.Decimal(0)
+        for bracket in self.brackets:
+            if bracket.start > taxable_income:
+                break
+            tax_amount += bracket.compute_tax(taxable_income)
+
+        return tax_amount
 
 
 @dataclass(frozen=True)

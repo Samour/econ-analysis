@@ -454,3 +454,98 @@ class LoadTaxTableTests(unittest.TestCase):
 
         with self.assertRaises(AssertionError):
             tax._load_tax_table(json.loads(table))
+
+
+class TaxBracketTests(unittest.TestCase):
+
+    def test_within_range(self) -> None:
+        self._expect_result(200, 40)
+
+    def test_equals_start(self) -> None:
+        self._expect_result(101, "0.4")
+
+    def test_equals_end(self) -> None:
+        self._expect_result(300, 80)
+
+    def test_below_start(self) -> None:
+        self._expect_result(50, 0)
+
+    def test_above_end(self) -> None:
+        self._expect_result(1000, 80)
+
+    def test_zero_rate(self) -> None:
+        bracket = """
+        {
+          "min": "101",
+          "max": "300",
+          "rate": "0"
+        }
+        """
+        tax_bracket = tax._load_tax_bracket(json.loads(bracket))
+
+        result = tax_bracket.compute_tax(decimal.Decimal(200))
+
+        self.assertEqual(result, decimal.Decimal(0))
+
+    def _expect_result(self, taxable_amount: int, expected_result: int | str) -> None:
+        result = self._load_bracket().compute_tax(decimal.Decimal(taxable_amount))
+
+        self.assertEqual(result, decimal.Decimal(expected_result))
+
+    def _load_bracket(self) -> tax.TaxBracket:
+        bracket = """
+        {
+          "min": "101",
+          "max": "300",
+          "rate": "0.40"
+        }
+        """
+        return tax._load_tax_bracket(json.loads(bracket))
+
+
+class TaxTableTests(unittest.TestCase):
+
+    def test_zero_dollars(self) -> None:
+        self._expect_result(0, 0)
+
+    def test_first_bracket(self) -> None:
+        self._expect_result(50, 0)
+
+    def test_middle_bracket(self) -> None:
+        self._expect_result(150, 15)
+
+    def test_middle_bracket_end(self) -> None:
+        self._expect_result(300, 60)
+
+    def test_final_bracket(self) -> None:
+        self._expect_result(500, 150)
+
+    def _expect_result(self, taxable_amount: int, expected_result: int | str) -> None:
+        result = self._load_table().calculate_tax(decimal.Decimal(taxable_amount))
+
+        self.assertEqual(result, decimal.Decimal(expected_result))
+
+    def _load_table(self) -> tax.TaxTable:
+        bracket = """
+        {
+          "year": "2024-25",
+          "brackets": [
+            {
+              "min": "0",
+              "max": "100",
+              "rate": "0"
+            },
+            {
+              "min": "101",
+              "max": "300",
+              "rate": "0.30"
+            },
+            {
+              "min": "301",
+              "max": null,
+              "rate": "0.45"
+            }
+          ]
+        }
+        """
+        return tax._load_tax_table(json.loads(bracket))
