@@ -57,8 +57,22 @@ def _parse_financial_year(fy: str) -> int:
     assert match is not None
     year = int(match.group(1))
     assert 2000 + int(match.group(2)) - year == 1
+
     return year
 
 
 def _load_tax_bracket(content: dict[typing.Any, typing.Any]) -> TaxBracket:
-    pass
+    assert type(content) == dict
+    b_min = content["min"]
+    assert type(b_min) == str
+    b_max = content["max"]
+    assert type(b_max) == str
+    b_rate = content["rate"]
+    assert type(b_rate) == str
+
+    bracket = TaxBracket(start=int(b_min), end=int(b_max), rate=float(b_rate))
+    assert bracket.start < bracket.end
+    assert bracket.rate >= 0
+    assert bracket.rate <= 1
+
+    return bracket
