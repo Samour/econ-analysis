@@ -1,3 +1,4 @@
+import decimal
 import json
 import unittest
 from analysis import tax
@@ -52,7 +53,14 @@ class LoadTaxBracketTests(unittest.TestCase):
         """
         result = tax._load_tax_bracket(json.loads(bracket))
 
-        self.assertEqual(result, tax.TaxBracket(start=0, end=500, rate=0.3))
+        self.assertEqual(
+            result,
+            tax.TaxBracket(
+                start=decimal.Decimal(0),
+                end=decimal.Decimal(500),
+                rate=decimal.Decimal("0.3"),
+            ),
+        )
 
     def test_load_tax_bracket_zero_rate(self) -> None:
         bracket = """
@@ -64,7 +72,14 @@ class LoadTaxBracketTests(unittest.TestCase):
         """
         result = tax._load_tax_bracket(json.loads(bracket))
 
-        self.assertEqual(result, tax.TaxBracket(start=0, end=500, rate=0))
+        self.assertEqual(
+            result,
+            tax.TaxBracket(
+                start=decimal.Decimal(0),
+                end=decimal.Decimal(500),
+                rate=decimal.Decimal(0),
+            ),
+        )
 
     def test_load_tax_bracket_end_equal_start(self) -> None:
         bracket = """
@@ -129,7 +144,7 @@ class LoadTaxBracketTests(unittest.TestCase):
             "rate": "0.30"
         }
         """
-        with self.assertRaises(ValueError):
+        with self.assertRaises(decimal.InvalidOperation):
             tax._load_tax_bracket(json.loads(bracket))
 
     def test_load_tax_bracket_max_number_type(self) -> None:
@@ -151,7 +166,7 @@ class LoadTaxBracketTests(unittest.TestCase):
             "rate": "0.30"
         }
         """
-        with self.assertRaises(ValueError):
+        with self.assertRaises(decimal.InvalidOperation):
             tax._load_tax_bracket(json.loads(bracket))
 
     def test_load_tax_bracket_rate_number_type(self) -> None:
@@ -173,5 +188,5 @@ class LoadTaxBracketTests(unittest.TestCase):
             "rate": "30 %"
         }
         """
-        with self.assertRaises(ValueError):
+        with self.assertRaises(decimal.InvalidOperation):
             tax._load_tax_bracket(json.loads(bracket))

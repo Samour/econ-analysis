@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import decimal
 import json
 import typing
 import re
@@ -6,10 +7,10 @@ import re
 
 @dataclass(frozen=True)
 class TaxBracket:
-    start: int
-    end: int
+    start: decimal.Decimal
+    end: decimal.Decimal
     # TODO Change these to correct decimal type
-    rate: float
+    rate: decimal.Decimal
 
 
 @dataclass(frozen=True)
@@ -70,7 +71,11 @@ def _load_tax_bracket(content: dict[typing.Any, typing.Any]) -> TaxBracket:
     b_rate = content["rate"]
     assert type(b_rate) == str
 
-    bracket = TaxBracket(start=int(b_min), end=int(b_max), rate=float(b_rate))
+    bracket = TaxBracket(
+        start=decimal.Decimal(b_min),
+        end=decimal.Decimal(b_max),
+        rate=decimal.Decimal(b_rate),
+    )
     assert bracket.start < bracket.end
     assert bracket.rate >= 0
     assert bracket.rate <= 1
