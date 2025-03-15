@@ -51,6 +51,7 @@ mypy --strict analysis
 Available entry points:
 
 - `tax_rates_over_time`
+- `inflation_over_time`
 
 Run the specific package
 

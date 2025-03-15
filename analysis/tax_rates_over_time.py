@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import typing
-from analysis import tax
+from analysis import tax, labels
 
 
 _Adjustment = typing.Literal["none", "cpi", "wpi"]
@@ -15,24 +15,16 @@ def _show_tax_tables() -> None:
 
     rows = []
     for year in tax_tables.year_tables:
-        fy = (
-            "1999-2000"
-            if year.year == 1999
-            else f"{year.year}-{year.year % 100 + 1:02}"
-        )
         for bracket in year.brackets:
             rows.append(
                 {
-                    "year": fy,
+                    "year": labels.financial_year(year.year),
                     "start": bracket.start,
                     "rate": f"{bracket.rate * 100:.0f}%",
                 }
             )
     rows.sort(key=lambda r: (r["year"], r["start"]))
-    year_index: list[str] = []
-    for row in rows:
-        if len(year_index) == 0 or year_index[-1] != row["year"]:
-            year_index.append(row["year"])  # type: ignore[arg-type]
+    x_to_fy = labels.create_x_to_fy([r["year"] for r in rows])  # type: ignore[misc]
 
     df = pd.DataFrame(rows)
     _, ax = plt.subplots()
@@ -44,17 +36,17 @@ def _show_tax_tables() -> None:
         ylabel="Tax bracket in $",
     )
 
-    for _, row in df.iterrows():  # type: ignore[assignment]
+    for _, row in df.iterrows():
         ax.annotate(
-            row["rate"],  # type: ignore[arg-type]
-            (row["year"], row["start"]),  # type: ignore[arg-type]
+            row["rate"],
+            (row["year"], row["start"]),
             xytext=(10, 10),
             textcoords="offset pixels",
         )
 
     plt.xticks(rotation=40)
     plt.gca().format_coord = (  # type: ignore[method-assign]
-        lambda x, y: f"fy={year_index[_clamp(0, round(x), len(year_index) - 1)]}, ${y:,.0f}"  # type: ignore[no-untyped-call]
+        lambda x, y: f"fy={x_to_fy(x)}, ${y:,.0f}"
     )
     plt.show()
 
