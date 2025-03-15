@@ -1,6 +1,10 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+import typing
 from analysis import tax
+
+
+_Adjustment = typing.Literal["none", "cpi", "wpi"]
 
 
 _clamp = lambda x, y, z: max(x, min(y, z))
@@ -32,7 +36,13 @@ def _show_tax_tables() -> None:
 
     df = pd.DataFrame(rows)
     _, ax = plt.subplots()
-    df.plot.scatter(x="year", y="start", ax=ax, figsize=(14, 6))
+    df.plot.scatter(
+        x="year",
+        y="start",
+        ax=ax,
+        figsize=(14, 6),
+        ylabel="Tax bracket in $",
+    )
 
     for _, row in df.iterrows():  # type: ignore[assignment]
         ax.annotate(
