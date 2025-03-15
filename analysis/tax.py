@@ -20,5 +20,5 @@ class MultiYearTaxTable:
     year_tables: list[TaxTable]
 
 
-def load_tax_tables(fname: str) -> None:
+def load_tax_tables(fname: str) -> MultiYearTaxTable:
     pass
