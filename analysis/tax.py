@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import decimal
 import json
 import typing
-import re
+from analysis import parse
 
 
 @dataclass(frozen=True)
@@ -60,7 +60,7 @@ def _load_tax_table(content: dict[typing.Any, typing.Any]) -> TaxTable:
     brackets_data = content["brackets"]
     assert type(brackets_data) == list
 
-    year = _parse_financial_year(fy)
+    year = parse.parse_financial_year(fy)
     brackets: list[TaxBracket] = []
     for b in brackets_data:
         bracket = _load_tax_bracket(b, fy=fy)
@@ -79,18 +79,6 @@ def _load_tax_table(content: dict[typing.Any, typing.Any]) -> TaxTable:
         year=year,
         brackets=brackets,
     )
-
-
-def _parse_financial_year(fy: str) -> int:
-    if fy == "1999-2000":
-        return 1999
-
-    match = re.match("(\\d{4})-(\\d{2})", fy)
-    assert match is not None
-    year = int(match.group(1))
-    assert 2000 + int(match.group(2)) - year == 1, f"Invalid financial year: {fy}"
-
-    return year
 
 
 def _load_tax_bracket(content: dict[typing.Any, typing.Any], fy: str) -> TaxBracket:
