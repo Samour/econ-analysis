@@ -10,17 +10,29 @@ def _show_tax_paid(
 ) -> None:
     d_income = decimal.Decimal(income)
     tax_tables = tax.load_tax_tables()
+    inflation_adjustment: typing.Callable[[int, decimal.Decimal], decimal.Decimal] = (
+        lambda _, x: x
+    )
+
+    if inflation_adjusted is not None:
+        inflate = inflation.load_inflation(measure=inflation_adjusted)
+        tax_tables = tax_tables.adjusted_for_inflation(inflate)
+        to_year = max(t.year for t in tax_tables.year_tables)
+        # inflation_adjustment = lambda y, x: inflate.adjust(
+        # amount=x, from_year=y, to_year=to_year
+        # )
 
     fy_index = []
     rows = []
     for year in reversed(tax_tables.year_tables):
         fy_index.append(labels.financial_year(year.year))
-        tax_amount = year.calculate_tax(d_income)
+        adjusted_income = inflation_adjustment(year.year, d_income)
+        tax_amount = year.calculate_tax(adjusted_income)
         rows.append(
             {
-                "income": int(d_income),
+                "income": int(adjusted_income),
                 "tax": int(tax_amount),
-                "etr": float(tax_amount / d_income * 100),
+                "etr": float(tax_amount / adjusted_income * 100),
             }
         )
 
@@ -33,4 +45,4 @@ def _show_tax_paid(
 
 
 if __name__ == "__main__":
-    _show_tax_paid(100_000)
+    _show_tax_paid(income=50_000, inflation_adjusted=inflation.InflationMeasure.WPI)
