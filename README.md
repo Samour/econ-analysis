@@ -52,6 +52,7 @@ Available entry points:
 
 - `tax_rates_over_time`
 - `inflation_over_time`
+- `effective_tax_over_time`
 
 Run the specific package
 
